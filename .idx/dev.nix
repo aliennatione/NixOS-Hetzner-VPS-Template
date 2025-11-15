@@ -8,10 +8,5 @@
     extensions = [
       "google.gemini-cli-vscode-ide-companion"
     ];
-    workspace = {
-      onCreate = {
-        install-bmad = "npx bmad-method@alpha install";
-      };
-    };
   };
 }
