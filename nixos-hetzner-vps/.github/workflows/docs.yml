@@ -1,0 +1,27 @@
+name: "CI: Deploy Documentation"
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write # Permette di pushare sul branch gh-pages
+
+jobs:
+  deploy-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: Install MkDocs
+        run: pip install mkdocs mkdocs-material
+
+      - name: Build and Deploy Docs
+        run: mkdocs gh-deploy --force
