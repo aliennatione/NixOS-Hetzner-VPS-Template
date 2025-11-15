@@ -3,60 +3,74 @@
 [![NixOS](https://img.shields.io/badge/NixOS-24.05-blue?logo=nixos&logoColor=white)](https://nixos.org)
 [![CI/CD](https://github.com/your-username/nixos-hetzner-vps/actions/workflows/ci-advanced.yml/badge.svg)](https://github.com/your-username/nixos-hetzner-vps/actions)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Documentation](https://img.shields.io/badge/Documentation-Online-blue)](https://your-username.github.io/nixos-hetzner-vps)
-[![Discord](https://img.shields.io/discord/your-discord-id?label=Community&logo=discord)](https://discord.gg/your-invite)
+[![Documentation](https://img.shields.io/badge/Documentation-mkdocs-blue.svg)](https://your-username.github.io/nixos-hetzner-vps/)
 
-**Production-ready NixOS deployment template for Hetzner VPS with ZFS + LUKS + Podman**
+**Un template di repository enterprise-grade per il deploy di server NixOS riproducibili su Hetzner Cloud, basato su un\'architettura a profili componibili.**
 
-✅ **Battle-tested in production**  
-✅ **Fully automated installation**  
-✅ **Optimized for cloud environments**  
-✅ **Complete documentation included**  
-✅ **Modular architecture**  
-✅ **Professional documentation site**
+Questo progetto non è solo un insieme di file di configurazione, ma un framework completo progettato per portare i principi di Infrastructure as Code (IaC) e la riproducibilità di NixOS nel mondo del cloud hosting, con un focus specifico su Hetzner.
 
-[![Demo Video](https://img.youtube.com/vi/demo-video-id/0.jpg)](https://youtu.be/demo-video-id)
+---
 
-## 🌟 Features
+## ✨ Filosofia del Progetto
 
-### 🔒 Security First
-- **Full-disk encryption**: LUKS encryption for all data at rest
-- **SSH hardening**: No root login, password authentication disabled
-- **Firewall by default**: Only essential ports exposed (22, 80, 443)
-- **Security modules**: Independent security features that can be enabled/disabled
-- **Regular updates**: Easy system upgrades with NixOS reproducibility
+L\'obiettivo è semplice: rendere il deploy di un server VPS un\'operazione **prevedibile, dichiarativa e componibile**.
 
-### ⚡ Performance Optimized
-- **ZFS ARC tuning**: Limited to 1GB for stable VPS performance
-- **Dataset separation**: Independent datasets for `/nix`, `/containers`, `/persist`
-- **Compression enabled**: LZ4 compression for storage efficiency
-- **Hardware detection**: Automatic optimization for Hetzner hardware
-- **Workload profiles**: Optimized settings for different use cases
+*   **Dichiarativo:** La configurazione del server è interamente definita come codice. Nessun passo manuale, nessuna "configuration drift".
+*   **Componibile:** Invece di un monolite, il sistema è costruito su **profili** impilabili. Parti da un sistema `minimal` e aggiungi solo ciò di cui hai bisogno (es. `webserver`).
+*   **Riproducibile:** Grazie a Nix e Flakes, lo stesso `flake.nix` produrrà **esattamente lo stesso ambiente software**, oggi o tra un anno.
 
-### 🧩 Modular Architecture
-- **Atomic modules**: Each module is self-contained and testable
-- **Composition over inheritance**: Mix and match modules like LEGO
-- **Profile system**: Pre-configured profiles for common use cases
-- **Zero dependencies**: Modules don't depend on each other's internal state
-- **Declarative everything**: Infrastructure, security, and runtime
+## 🔥 Funzionalità Principali
 
-### 🐳 Container Ready
-- **Podman rootless**: Secure container runtime without root privileges
-- **Systemd integration**: Native service management for containers
-- **Docker-compatible**: Docker CLI compatibility layer
-- **Dedicated storage**: Isolated ZFS dataset for container data
-- **Registry support**: Private registry configuration included
+*   **Architettura a Profili:**
+    *   `minimal`: Una base sicura e ultra-leggera con solo l\'essenziale (SSH, utente, firewall).
+    *   `webserver`: Estende `minimal` con Nginx e le porte firewall aperte per HTTP/HTTPS.
+    *   *...facilmente estensibile con i tuoi profili!*
+*   **Partizionamento Dichiarativo:** Il layout del disco è codificato tramite `disko`, eliminando la necessità di partizionamento manuale durante l\'installazione.
+*   **Basato su Flakes:** Sfrutta la potenza dei Flakes per una gestione delle dipendenze ermetica e riproducibile.
+*   **Integrazione con Hetzner Cloud:** Include i moduli hardware specifici per le VM Hetzner.
+*   **Development Shell:** Fornisce una `devShell` con tutti gli strumenti necessari per lavorare sul progetto.
 
-### 🔄 Flexible Deployment
-- **Rescue Mode**: Fully automated installation via Hetzner rescue system
-- **Live ISO**: Manual installation with full control and debugging
-- **Cloud-init**: Zero-touch deployment for infrastructure automation
-- **Template system**: Easy configuration through template files
-- **Interactive wizard**: Guided setup for beginners
+## 🚀 Come Iniziare
 
-## 🚀 Quick Start
+### 1. Utilizza questo Template
 
-### Using the Template
-[![Use this template](https://img.shields.io/badge/Use%20this%20template-2ea44f?logo=github&logoColor=white)](https://github.com/your-username/nixos-hetzner-vps/generate)
+Clicca su "**Use this template**" in cima alla pagina di GitHub per creare un nuovo repository basato su questo modello.
 
-### Interactive Installation (Recommended for Beginners)
+### 2. Clona il tuo Repository
+
+```bash
+git clone https://github.com/your-username/your-new-repo.git
+cd your-new-repo
+```
+
+### 3. Personalizza la Configurazione (Opzionale)
+
+Apri `flake.nix` e scegli il profilo che desideri deployare. Di default, sono disponibili:
+
+*   `nixosConfigurations.hetzner-minimal`
+*   `nixosConfigurations.hetzner-webserver`
+
+Puoi facilmente creare un nuovo profilo in `profiles/` e aggiungerlo al `flake.nix`.
+
+### 4. Installa NixOS sul tuo Server Hetzner
+
+Una volta creato un nuovo server (consigliato `cx11`) ed entrato nella rescue mode:
+
+```bash
+# Esegui lo script di installazione puntando al tuo repository
+nix --extra-experimental-features "nix-command flakes" run github:nix-community/nixos-anywhere -- \
+  --flake .#hetzner-webserver \
+  root@<YOUR_SERVER_IP>
+```
+
+Questo comando farà tutto: partizionerà il disco, installerà NixOS con il profilo scelto e configurerà SSH.
+
+---
+
+## 📚 Documentazione
+
+La documentazione completa, inclusi i dettagli sull\'architettura, le guide per la creazione di nuovi profili e le best practice, è disponibile [**qui**](https://your-username.github.io/nixos-hetzner-vps/).
+
+## 🤝 Contributing
+
+I contributi sono benvenuti! Consulta la documentazione per le linee guida su come contribuire al progetto.
