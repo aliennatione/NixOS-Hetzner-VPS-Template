@@ -1,9 +1,9 @@
 # 🚀 NixOS Hetzner VPS Template
 
 [![NixOS](https://img.shields.io/badge/NixOS-24.05-blue?logo=nixos&logoColor=white)](https://nixos.org)
-[![CI/CD](https://github.com/your-username/nixos-hetzner-vps/actions/workflows/ci-advanced.yml/badge.svg)](https://github.com/your-username/nixos-hetzner-vps/actions)
+[![CI](https://github.com/<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>/actions/workflows/ci.yml/badge.svg)](https://github.com/<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Documentation](https://img.shields.io/badge/Documentation-mkdocs-blue.svg)](https://your-username.github.io/nixos-hetzner-vps/)
+[![Documentation](https://img.shields.io/badge/docs-mkdocs-blue.svg)](https://<YOUR_GITHUB_USERNAME>.github.io/<YOUR_REPO_NAME>/)
 
 **Un template di repository enterprise-grade per il deploy di server NixOS riproducibili su Hetzner Cloud, basato su un\'architettura a profili componibili.**
 
@@ -26,6 +26,7 @@ L\'obiettivo è semplice: rendere il deploy di un server VPS un\'operazione **pr
     *   `webserver`: Estende `minimal` con Nginx e le porte firewall aperte per HTTP/HTTPS.
     *   *...facilmente estensibile con i tuoi profili!*
 *   **Partizionamento Dichiarativo:** Il layout del disco è codificato tramite `disko`, eliminando la necessità di partizionamento manuale durante l\'installazione.
+*   **Continuous Integration:** Un workflow di GitHub Actions è preconfigurato per verificare la formattazione e la correttezza del codice Nix ad ogni commit.
 *   **Basato su Flakes:** Sfrutta la potenza dei Flakes per una gestione delle dipendenze ermetica e riproducibile.
 *   **Integrazione con Hetzner Cloud:** Include i moduli hardware specifici per le VM Hetzner.
 *   **Development Shell:** Fornisce una `devShell` con tutti gli strumenti necessari per lavorare sul progetto.
@@ -39,8 +40,8 @@ Clicca su "**Use this template**" in cima alla pagina di GitHub per creare un nu
 ### 2. Clona il tuo Repository
 
 ```bash
-git clone https://github.com/your-username/your-new-repo.git
-cd your-new-repo
+git clone https://github.com/<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>.git
+cd <YOUR_REPO_NAME>
 ```
 
 ### 3. Personalizza la Configurazione (Opzionale)
@@ -69,7 +70,7 @@ Questo comando farà tutto: partizionerà il disco, installerà NixOS con il pro
 
 ## 📚 Documentazione
 
-La documentazione completa, inclusi i dettagli sull\'architettura, le guide per la creazione di nuovi profili e le best practice, è disponibile [**qui**](https://your-username.github.io/nixos-hetzner-vps/).
+La documentazione completa, inclusi i dettagli sull\'architettura, le guide per la creazione di nuovi profili e le best practice, è disponibile [**qui**](https://<YOUR_GITHUB_USERNAME>.github.io/<YOUR_REPO_NAME>/).
 
 ## 🤝 Contributing
 
