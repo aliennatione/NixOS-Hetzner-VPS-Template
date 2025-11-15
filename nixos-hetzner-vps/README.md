@@ -1,9 +1,9 @@
 # 🚀 NixOS Hetzner VPS Template
 
 [![NixOS](https://img.shields.io/badge/NixOS-24.05-blue?logo=nixos&logoColor=white)](https://nixos.org)
-[![CI](https://github.com/<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>/actions/workflows/ci.yml/badge.svg)](https://github.com/<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>/actions/workflows/ci.yml)
+[![CI](https://github.com/{{ Owner }}/{{ Repository Name }}/actions/workflows/ci.yml/badge.svg)](https://github.com/{{ Owner }}/{{ Repository Name }}/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Documentation](https://img.shields.io/badge/docs-mkdocs-blue.svg)](https://<YOUR_GITHUB_USERNAME>.github.io/<YOUR_REPO_NAME>/)
+[![Documentation](https://img.shields.io/badge/docs-mkdocs-blue.svg)](https://{{ Owner }}.github.io/{{ Repository Name }}/)
 
 **Un template di repository enterprise-grade per il deploy di server NixOS riproducibili su Hetzner Cloud, basato su un\'architettura a profili componibili.**
 
@@ -40,8 +40,8 @@ Clicca su "**Use this template**" in cima alla pagina di GitHub per creare un nu
 ### 2. Clona il tuo Repository
 
 ```bash
-git clone https://github.com/<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>.git
-cd <YOUR_REPO_NAME>
+git clone https://github.com/{{ Owner }}/{{ Repository Name }}.git
+cd {{ Repository Name }}
 ```
 
 ### 3. Personalizza la Configurazione (Opzionale)
@@ -64,13 +64,11 @@ nix --extra-experimental-features "nix-command flakes" run github:nix-community/
   root@<YOUR_SERVER_IP>
 ```
 
-Questo comando farà tutto: partizionerà il disco, installerà NixOS con il profilo scelto e configurerà SSH.
-
 ---
 
 ## 📚 Documentazione
 
-La documentazione completa, inclusi i dettagli sull\'architettura, le guide per la creazione di nuovi profili e le best practice, è disponibile [**qui**](https://<YOUR_GITHUB_USERNAME>.github.io/<YOUR_REPO_NAME>/).
+La documentazione completa, inclusi i dettagli sull\'architettura, le guide per la creazione di nuovi profili e le best practice, è disponibile [**qui**](https://{{ Owner }}.github.io/{{ Repository Name }}/).
 
 ## 🤝 Contributing
 

@@ -1,32 +1,7 @@
-name: NixOS Hetzner VPS Template
-description: Production-ready NixOS deployment template for Hetzner VPS with ZFS + LUKS + Podman
-categories:
-  - infrastructure
-  - nixos
-  - hetzner
-  - zfs
-  - luks
-  - podman
-  - containers
-  - automation
-
 variables:
-  - name: server_hostname
-    description: Your server hostname (e.g., web-server-01)
-    default: nixos-server
-    
-  - name: ssh_public_key
-    description: Your SSH public key for admin access
-    default: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEXAMPLE your-email@example.com"
-    
-  - name: timezone
-    description: Your server timezone
-    default: "Europe/Berlin"
-    
-  - name: admin_username
-    description: Admin username (will be created automatically)
-    default: "admin"
-    
-  - name: profile
-    description: Deployment profile (minimal, webserver, container-host, database-server, full-stack)
-    default: "webserver"
+  - name: 'Owner'
+    description: 'Your GitHub username or organization name'
+    required: true
+  - name: 'Repository Name'
+    description: 'The name of your new repository'
+    required: true
