@@ -2,6 +2,7 @@
   channel = "stable-24.05";
   packages = [
     pkgs.nodejs_22
+    pkgs.python3
   ];
   env = {};
   idx = {
