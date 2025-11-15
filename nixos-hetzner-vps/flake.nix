@@ -5,6 +5,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     flake-utils.url = "github:numtide/flake-utils";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
+    disko.url = "github:nix-community/disko";
   };
 
   outputs = { self, nixpkgs, flake-utils, nixos-hardware, ... }@inputs:
@@ -28,25 +29,10 @@
       profiles = {
         minimal = ./profiles/minimal.nix;
         webserver = ./profiles/webserver.nix;
-        container-host = ./profiles/container-host.nix;
-        database-server = ./profiles/database-server.nix;
-        full-stack = ./profiles/full-stack.nix;
-      };
-
-      # Pre-defined templates for different use-cases
-      templates = {
-        simple-website = {
-          path = ./templates/by-use-case/simple-website.template.nix;
-          description = "A simple NixOS configuration for a static website.";
-        };
-        api-server = {
-          path = ./templates/by-use-case/api-server.template.nix;
-          description = "A template for a backend API server.";
-        };
-        development = {
-          path = ./templates/by-use-case/development.template.nix;
-          description = "A development environment template.";
-        };
+        # The following profiles are placeholders for future expansion
+        # container-host = ./profiles/container-host.nix;
+        # database-server = ./profiles/database-server.nix;
+        # full-stack = ./profiles/full-stack.nix;
       };
 
     in
@@ -72,7 +58,7 @@
             git
             gh
           ];
-          shellHook = '''
+          shellHook = ''
             echo "================================================================="
             echo " Entering NixOS Hetzner VPS Development Environment "
             echo "================================================================="
@@ -86,7 +72,7 @@
             echo "Run 'nix flake check' to run tests."
             echo "Run 'mkdocs serve' to preview the documentation."
             echo
-          ''';
+          '';
         };
 
       }) // {
@@ -99,7 +85,7 @@
           }
         ) profiles;
 
-        # Flake templates
-        templates = templates;
+        # Flake templates (if any)
+        # templates = { ... };
       };
 }

@@ -4,32 +4,35 @@ Questo documento traccia la cronologia delle decisioni e delle attività di svil
 
 ... (contenuto precedente omesso per brevità) ...
 
-**Risultato:** Il processo di installazione del sistema operativo è ora quasi completamente automatizzato. La configurazione del disco, un passaggio critico e complesso, è stata codificata in modo dichiarativo, aumentando l'affidabilità e la riproducibilità del setup iniziale del server.
-
-## Fase 8: Creazione del Profilo `webserver.nix`
-
-**Obiettivo:** Creare un profilo specializzato per un server web, basato sul profilo `minimal` e includendo Nginx con le relative configurazioni di firewall.
-
-**Logica di Composizione:**
-
-Questo profilo dimostra la potenza della composizione nell'architettura NixOS del progetto:
-
-1.  **Importazione di `minimal.nix`:** Il profilo `webserver.nix` importa `profiles/minimal.nix`.
-2.  **Ereditarietà Implicita:** Importando `minimal.nix`, eredita transitivamente tutte le configurazioni definite in `modules/nixos/core.nix`, tra cui:
-    *   Configurazione di base del sistema (utenti, SSH, localizzazione).
-    *   Firewall con porta 22 aperta.
-    *   Configurazione del partizionamento del disco tramite `disko`.
-
-**Funzionalità Aggiunte:**
-
-Partendo da questa solida base, il profilo `webserver` aggiunge due elementi specifici:
-
-1.  **Abilitazione del Servizio Nginx:** La riga `services.nginx.enable = true;` attiva e configura il demone Nginx, pronto a servire contenuti web.
-2.  **Configurazione del Firewall:** Vengono aperte le porte standard per il traffico web:
-    *   Porta `80` (HTTP).
-    *   Porta `443` (HTTPS).
-    *   NixOS gestisce in modo intelligente l'unione di queste porte con la porta `22` (SSH) già definita in `core.nix`, risultando in un set di regole del firewall finale che permette il traffico su `[22, 80, 443]`.
-
 **Risultato:**
 
 È stato creato un profilo riutilizzabile e specifico per lo scopo. Un utente può ora deployare un server web semplicemente selezionando il profilo `webserver` nel proprio `flake.nix`. Questo astrae tutta la complessità della configurazione di base, del partizionamento e delle regole del firewall, permettendo all'utente di concentrarsi sulla configurazione specifica della propria applicazione web all'interno di Nginx.
+
+## Fase 9: Esposizione dei Profili tramite `flake.nix`
+
+**Obiettivo:** Rendere i profili di sistema (`minimal` e `webserver`) concretamente utilizzabili, esponendoli come `nixosConfigurations` nell'output del `flake.nix`.
+
+**Logica di Implementazione:**
+
+L'attributo `outputs` del `flake.nix` è il punto di ingresso pubblico per tutto ciò che il flake fornisce. Per rendere installabili le nostre configurazioni, era necessario:
+
+1.  **Mappare i Profili alle Configurazioni:** Utilizzare la funzione `builtins.mapAttrs` per iterare dinamicamente sull'insieme di profili definito nella variabile `profiles`.
+2.  **Generare Configurazioni di Sistema:** Per ogni profilo, invocare la funzione helper `mkNixosSystem`. Questa funzione assembla una configurazione NixOS completa, combinando:
+    *   Il profilo specifico (es. `profiles/webserver.nix`).
+    *   Moduli hardware specifici per Hetzner Cloud (`nixos-hardware.nixosModules.hetzner-cloud`).
+    *   Un `hostname` univoco basato sul nome del profilo (es. `hetzner-webserver`).
+3.  **Esporre nell'Output:** Assegnare il risultato all'attributo `nixosConfigurations` dell'output del flake.
+
+**Pulizia e Coerenza:**
+
+*   Durante il processo, il `flake.nix` è stato ripulito per rimuovere i riferimenti a profili e template non ancora implementati (`container-host`, `database-server`, ecc.). Questo garantisce che il flake sia sempre in uno stato valutabile e coerente, riflettendo accuratamente lo stato di avanzamento del progetto.
+*   È stato aggiunto l'input `disko` per allineare le dipendenze del flake con quelle dei moduli.
+
+**Risultato Finale:**
+
+Questa fase completa il ciclo di sviluppo iniziale. Il progetto ora fornisce un flake NixOS funzionale che espone due configurazioni di sistema pronte per il deployment:
+
+*   `nixosConfigurations.hetzner-minimal`: Un sistema di base ultra-leggero.
+*   `nixosConfigurations.hetzner-webserver`: Un sistema pre-configurato con Nginx e firewall per il web hosting.
+
+Un utente può ora installare una di queste configurazioni su un server Hetzner con un singolo comando `nixos-rebuild`, realizzando pienamente l'obiettivo di un'infrastruttura come codice, riproducibile e dichiarativa.
