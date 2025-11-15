@@ -1,35 +1,36 @@
-{
-  config,
-  pkgs,
-  ... 
-}:
-
+# ==============================================================================
+# Web Server Profile
+# ==============================================================================
+#
+# This profile builds upon the `minimal` profile to create a fully functional
+# web server.
+#
+# It enables and configures the Nginx web server and opens the necessary
+# firewall ports for HTTP and HTTPS traffic.
+#
 {
   imports = [
-    ./minimal.nix # Inherit the base configuration
+    ./minimal.nix # Inherit the base configuration from the minimal profile
   ];
 
   # --- Web Server Configuration ---
 
-  # Enable the Nginx web server
-  services.nginx = {
-    enable = true;
-    # You can add default vhost configurations here, for example:
-    # virtualHosts."_".locations."/".root = "/var/www/html";
-  };
+  # Enable the Nginx web server service.
+  services.nginx.enable = true;
+
+  # By default, Nginx will serve an empty welcome page.
+  # You can define virtual hosts directly here, for example:
+  #
+  # services.nginx.virtualHosts."example.com" = {
+  #   forceSSL = true; # Redirect HTTP to HTTPS
+  #   enableACME = true; # Automatically fetch SSL certs from Let's Encrypt
+  #   root = "/var/www/example.com";
+  # };
 
   # --- Firewall Settings ---
 
-  # Open ports for HTTP and HTTPS traffic
+  # Open ports 80 (HTTP) and 443 (HTTPS) in the firewall.
+  # The SSH port (22) is already opened by the `ssh` module imported in `minimal.nix`.
+  # NixOS automatically merges these lists of open ports.
   networking.firewall.allowedTCPPorts = [ 80 443 ];
-
-  # Note: The core.nix module already allows port 22 for SSH.
-  # NixOS intelligently merges these lists.
-
-  # --- System Packages ---
-
-  # No additional system-wide packages are added by default.
-  # Web applications should manage their own dependencies.
-
-  system.stateVersion = "24.05"; # Ensure consistency
 }

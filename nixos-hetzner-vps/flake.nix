@@ -8,84 +8,152 @@
     disko.url = "github:nix-community/disko";
   };
 
-  outputs = { self, nixpkgs, flake-utils, nixos-hardware, ... }@inputs:
+  outputs = { self, nixpkgs, flake-utils, nixos-hardware, disko, ... }@inputs:
     let
-      # Supported systems
+      # Supported systems for the devShell.
       supportedSystems = [ "x86_64-linux" "aarch64-linux" ];
 
-      # Helper to generate NixOS configurations for each profile
-      mkNixosSystem = { system, profileName, profilePath }:
-        nixpkgs.lib.nixosSystem {
-          inherit system;
-          specialArgs = { inherit inputs; };
-          modules = [
-            nixos-hardware.nixosModules.hetzner-cloud
-            { networking.hostName = profileName; }
-            profilePath
-          ];
-        };
+      # =========================================================================
+      # || HELPER FUNCTION TO GENERATE A NIXOS SYSTEM                         ||
+      # =========================================================================
+      # This function builds a complete NixOS system configuration.
+      # It takes a profile path as input and injects all common modules
+      # required for a Hetzner Cloud server.
+      mkHetznerSystem = { profilePath, profileName }: nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux"; # All Hetzner Cloud servers are x86_64
+        specialArgs = { inherit inputs; }; # Pass flake inputs to all modules
 
-      # Pre-defined profiles to be exposed as NixOS configurations
-      profiles = {
-        minimal = ./profiles/minimal.nix;
-        webserver = ./profiles/webserver.nix;
-        # The following profiles are placeholders for future expansion
-        # container-host = ./profiles/container-host.nix;
-        # database-server = ./profiles/database-server.nix;
-        # full-stack = ./profiles/full-stack.nix;
+        modules = [
+          # 1. Base hardware module for Hetzner Cloud VMs.
+          nixos-hardware.nixosModules.hetzner-cloud
+
+          # 2. Declarative disk partitioning using disko.
+          #    The configuration is imported below.
+          inputs.disko.nixosModules.disko
+          ./modules/hetzner/disko-config.nix
+
+          # 3. The specific profile for this system (e.g., minimal, webserver).
+          #    This is where the main configuration for the server role lives.
+          profilePath
+
+          # 4. Set the hostname based on the profile name.
+          { networking.hostName = profileName; }
+        ];
       };
 
+      # =========================================================================
+      # || AUTOMATIC PROFILE DISCOVERY                                      ||
+      # =========================================================================
+      # This block automatically discovers all `.nix` files in the `./profiles`
+      # directory and creates an attribute set from them.
+      # e.g., { minimal = ./profiles/minimal.nix; webserver = ./profiles/webserver.nix; }
+      profiles = let
+        # Read all files in the directory
+        profileFiles = builtins.readDir ./profiles;
+        # Filter for .nix files and create a list of file names
+        nixFileNames = builtins.filter (file: builtins.match ".*\.nix" file != null) (builtins.attrNames profileFiles);
+        # Create an attribute { name, value } for each file
+        toAttr = name: {
+          # 'webserver.nix' -> 'webserver'
+          name = builtins.elemAt (builtins.split ".nix" name) 0;
+          value = ./. + "/profiles/" + name;
+        };
+      in
+        builtins.listToAttrs (map toAttr nixFileNames);
+
     in
+    # =========================================================================
+    # || FLAKE OUTPUTS                                                      ||
+    # =========================================================================
     flake-utils.lib.eachSystem supportedSystems (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
-        # Development shell
+        # -----------------------------------------------------------------------
+        # | Development Shell                                                   |
+        # -----------------------------------------------------------------------
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             # Nix tooling
-            nixpkgs-fmt
-            statix
-            deadnix
-            nil
+            nixpkgs-fmt         # Formatter for Nix code
+            statix              # Linter for Nix code to find errors
+            deadnix             # Find and remove unused Nix code
+            nil                 # Nix language server for IDEs
+
             # Documentation
-            mkdocs
-            markdownlint-cli
+            mkdocs              # Static site generator for documentation
+            markdownlint-cli    # Linter for Markdown files
+
             # Shell scripting
-            shellcheck
+            shellcheck          # Linter for shell scripts
+
             # General purpose
             git
             gh
           ];
-          shellHook = ''
+
+          # Hook to display a welcome message and instructions on shell entry.
+          shellHook = '''
             echo "================================================================="
             echo " Entering NixOS Hetzner VPS Development Environment "
             echo "================================================================="
             echo
-            echo "Available tools:"
-            echo " - nixpkgs-fmt: Format Nix files"
-            echo " - statix, deadnix, nil: Nix code analysis and linting"
-            echo " - mkdocs, markdownlint-cli: Documentation tools"
-            echo " - shellcheck: Bash script analysis"
+            echo "Run 'nix flake check' to lint and format the codebase."
+            echo "Run 'mkdocs serve' to preview the documentation locally."
             echo
-            echo "Run 'nix flake check' to run tests."
-            echo "Run 'mkdocs serve' to preview the documentation."
-            echo
-          '';
+          ''';
         };
 
-      }) // {
-        # NixOS Configurations, one for each profile
-        nixosConfigurations = builtins.mapAttrs (name: path:
-          mkNixosSystem {
-            system = "x86_64-linux"; # Hetzner primarily uses x86_64
-            profileName = "hetzner-${name}";
-            profilePath = path;
-          }
-        ) profiles;
+        # -----------------------------------------------------------------------
+        # | Code Checks                                                         |
+        # -----------------------------------------------------------------------
+        # This output is used by `nix flake check` to run tests and linters.
+        # It is also used by the CI workflow.
+        checks = {
+          # Check if all Nix files are correctly formatted
+          formatting = pkgs.runCommand "check-formatting" {
+            nativeBuildInputs = [ pkgs.nixpkgs-fmt ];
+          } '''
+            echo "Checking formatting of all .nix files..."
+            ${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt --check ${./.}
+            touch $out
+          ''';
 
-        # Flake templates (if any)
-        # templates = { ... };
-      };
+          # Check for stylistic and correctness issues with Statix
+          lint-statix = pkgs.runCommand "check-lint-statix" {
+            nativeBuildInputs = [ pkgs.statix ];
+          } '''
+            echo "Linting Nix files with Statix..."
+            ${pkgs.statix}/bin/statix check ${./.}
+            touch $out
+          ''';
+
+          # Check for unused Nix code with deadnix
+          lint-deadnix = pkgs.runCommand "check-lint-deadnix" {
+            nativeBuildInputs = [ pkgs.deadnix ];
+          } '''
+            echo "Checking for dead code with deadnix..."
+            ${pkgs.deadnix}/bin/deadnix --fail ${./.}
+            touch $out
+          ''';
+        };
+      })
+
+    // # Outputs that are not system-specific
+
+    {
+      # =========================================================================
+      # || NIXOS CONFIGURATIONS                                               ||
+      # =========================================================================
+      # This uses `mapAttrs` to automatically generate a NixOS configuration
+      # for each profile discovered in the `./profiles` directory.
+      # The output will be `nixosConfigurations.hetzner-minimal`, etc.
+      nixosConfigurations = builtins.mapAttrs (name: path:
+        mkHetznerSystem {
+          profileName = "hetzner-${name}";
+          profilePath = path;
+        }
+      ) profiles;
+    };
 }
