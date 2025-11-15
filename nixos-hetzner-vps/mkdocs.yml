@@ -1,0 +1,137 @@
+site_name: NixOS Hetzner VPS Template
+site_description: Production-ready NixOS deployment template for Hetzner VPS
+site_author: Your Name
+site_url: https://your-username.github.io/nixos-hetzner-vps/
+
+repo_name: your-username/nixos-hetzner-vps
+repo_url: https://github.com/your-username/nixos-hetzner-vps
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.annotate
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+extra:
+  analytics:
+    provider: google
+    property: UA-XXXXXXXX-X
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/your-username/nixos-hetzner-vps
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/your-invite
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/your-handle
+
+plugins:
+  - search
+  - git-revision-date-localized
+  - mike
+  - mermaid2
+  - diagrams
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - For Beginners: beginner/getting-started.md
+    - Installation Guide: beginner/installation.md
+    - First Steps: beginner/first-steps.md
+  - Architecture:
+    - Overview: architecture/overview.md
+    - Implementation: architecture/implementation.md
+    - Security Model: architecture/security.md
+    - Performance Model: architecture/performance.md
+  - Modules:
+    - Base Modules: modules/base.md
+    - Security Modules: modules/security.md
+    - Storage Modules: modules/storage.md
+    - Container Modules: modules/containers.md
+    - Monitoring Modules: modules/monitoring.md
+    - Service Modules: modules/services.md
+  - Profiles:
+    - Minimal Profile: profiles/minimal.md
+    - Web Server Profile: profiles/webserver.md
+    - Container Host Profile: profiles/container-host.md
+    - Database Server Profile: profiles/database-server.md
+    - Full Stack Profile: profiles/full-stack.md
+  - Advanced Guides:
+    - Configuration Deep Dive: advanced/configuration.md
+    - Performance Tuning: advanced/performance.md
+    - Security Hardening: advanced/security.md
+    - Disaster Recovery: advanced/recovery.md
+  - Reference:
+    - Module API Reference: reference/api.md
+    - Configuration Options: reference/options.md
+    - Command Reference: reference/commands.md
+    - Troubleshooting: reference/troubleshooting.md
+  - Examples:
+    - Simple Web Server: examples/simple-webserver.md
+    - Production Stack: examples/production-stack.md
+    - High Availability: examples/ha-setup.md
+  - Contributing:
+    - Development Guide: contributing/development.md
+    - Testing Guide: contributing/testing.md
+    - Documentation Guide: contributing/documentation.md
+  - About:
+    - License: about/license.md
+    - Changelog: about/changelog.md
+    - Roadmap: about/roadmap.md

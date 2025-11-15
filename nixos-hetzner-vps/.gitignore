@@ -1,0 +1,47 @@
+# Nix
+/result
+/nix/store
+/nix/var
+/nix-profile
+/nix-defexpr
+/nix-path
+
+# SSH keys and secrets
+*.key
+*.pem
+secrets/
+.env
+.env.local
+
+# Build artifacts
+*.iso
+*.img
+*.qcow2
+*.vdi
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+
+# Logs
+*.log
+logs/
+journal/
+
+# Editor backups
+*#
+.#*
+*.swp
+*.swo
+
+# CI/CD artifacts
+.github/workflows/cache/
+site/
+public/
+
+# Documentation builds
+_site/
+_site/*
+mkdocs_cache/

@@ -1,0 +1,110 @@
+name: Enterprise CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly comprehensive tests
+
+jobs:
+  # Phase 1: Quick Validation (5 minutes)
+  syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: cachix/install-nix-action@v22
+    - run: nix flake check --print-build-logs
+    
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: shellcheck **/*.sh || true
+    
+  markdownlint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: DavidAnson/markdownlint-cli2-action@v17
+
+  # Phase 2: Module Testing (15 minutes)
+  module-tests:
+    needs: [syntax-check, shellcheck, markdownlint]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: 
+          - base
+          - security
+          - storage
+          - containers
+          - monitoring
+    steps:
+    - uses: actions/checkout@v4
+    - uses: cachix/install-nix-action@v22
+    - run: nix develop -c nix flake check --accept-flake-config
+    - run: |
+        nix build ".#checks.x86_64-linux.${{ matrix.module }}-tests" \
+        --print-build-logs
+
+  # Phase 3: Integration Testing (45 minutes)
+  integration-test:
+    needs: module-tests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
+    
+    steps:
+    - uses: actions/checkout@v4
+    - uses: cachix/install-nix-action@v22
+    
+    - name: Setup QEMU
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y qemu-kvm libvirt-daemon-system
+        
+    - name: Run Integration Tests
+      run: |
+        nix build ".#integration-tests" --print-build-logs
+        
+    - name: Performance Benchmark
+      if: github.ref == 'refs/heads/main'
+      run: |
+        nix run ".#benchmarks.run" -- --output results.json
+        cat results.json >> $GITHUB_STEP_SUMMARY
+
+  # Phase 4: Security Scan (10 minutes)
+  security-scan:
+    needs: [syntax-check, module-tests]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    - uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: "fs"
+        ignore-unfixed: true
+        severity: "CRITICAL,HIGH"
+        
+    - name: Secret Detection
+      run: |
+        git-secrets --register-aws
+        git-secrets --scan -r || true
+
+  # Phase 5: Documentation Build (5 minutes)
+  docs-build:
+    needs: syntax-check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Build Documentation Site
+      run: |
+        pip install mkdocs-material mike
+        mkdocs build
+        mike deploy --push --update-aliases 1.0 latest
