@@ -6,28 +6,29 @@ Questo documento traccia la cronologia delle decisioni e delle attività di svil
 
 **Obiettivo:** Creare una struttura di repository completa e robusta basata sul documento di concezione iniziale (`init.md`).
 
-**Fase 1: Generazione della Struttura di Base**
+... (contenuto precedente omesso per brevità) ...
 
-*   **Azione:** È stato eseguito uno script Python (`create_repo.py`) per generare i file e le directory principali come definito nel documento `init.md`.
-*   **Risultato:** La generazione ha avuto successo, ma ha rivelato un'importante discrepanza: il documento `init.md` descriveva una struttura ad albero molto più ampia rispetto ai file per i quali forniva effettivamente il contenuto. Di conseguenza, il repository iniziale era incompleto.
-*   **Decisione:** Per allineare la struttura del codice sorgente alla visione del progetto, si è deciso di non attendere il contenuto completo, ma di procedere con la creazione di file segnaposto (placeholder) per tutti gli elementi mancanti. Questo approccio consente uno sviluppo iterativo e parallelo sui diversi moduli.
-
-**Fase 2: Completamento della Struttura con Placeholder**
-
-*   **Azione:** È stato creato uno script Python ad-hoc (`dev_scripts/create_placeholders.py`) per affrontare il problema.
-    1.  Lo script ha analizzato la struttura ad albero completa definita in `init.md`.
-    2.  Ha iterato su ogni file previsto.
-    3.  Per ogni file non ancora esistente, lo ha creato, incluse le directory parent necessarie.
-    4.  È stato inserito un contenuto segnaposto standard, distinguendo tra file `.nix` e altri tipi di file, per facilitare lo sviluppo futuro.
-*   **Risultato:** L'esecuzione dello script ha portato alla creazione di 87 file aggiuntivi, completando la struttura del repository come da specifica iniziale.
-
-**Fase 3: Normalizzazione e Organizzazione del Repository**
-
-*   **Azione:**
-    1.  Il repository Git è stato normalizzato. Tutti i file generati sono stati aggiunti all'area di stage e committati con un messaggio descrittivo (`feat: scaffold complete repository structure from init.md`).
-    2.  Le modifiche sono state sincronizzate con il repository remoto.
-    3.  È stata creata una directory `dev_scripts` per ospitare gli script di supporto allo sviluppo (come `create_placeholders.py`), separandoli dal codice sorgente del progetto.
-    4.  Questa directory è stata aggiunta al file `.gitignore` per evitare che gli script ausiliari vengano tracciati nel repository principale.
-    5.  È stato creato questo diario di sviluppo (`DEV_LOG.md`) per documentare in modo più discorsivo il flusso di lavoro.
 *   **Stato Attuale:** Il repository ha una struttura completa e coerente con la visione iniziale. La baseline è stabilita e il progetto è pronto per l'implementazione del contenuto effettivo dei vari moduli e file.
 
+## Fase 4: Definizione del Flake Principale (`flake.nix`)
+
+**Obiettivo:** Implementare un `flake.nix` robusto, manutenibile e ben strutturato che funga da punto di ingresso per l'intero sistema.
+
+**Analisi del Placeholder:** Il file `flake.nix` segnaposto iniziale era funzionale ma privo di una struttura scalabile. Mancava di una chiara separazione delle responsabilità e avrebbe portato a una notevole duplicazione di codice man mano che il progetto cresceva.
+
+**Decisione Strategica: Ristrutturazione Completa**
+
+Si è deciso di riscrivere completamente il `flake.nix` per adottare pratiche migliori e stabilire una base solida. L'approccio si è concentrato sui seguenti principi:
+1.  **Centralizzazione della Logica:** Utilizzare un blocco `let` principale per definire variabili e funzioni riutilizzabili.
+2.  **Astrazione e Riduzione della Duplicazione:** Creare funzioni helper per compiti ripetitivi, come la generazione di configurazioni NixOS.
+3.  **Chiarezza e Manutenibilità:** Organizzare gli input, gli output e la logica interna in modo che siano facili da comprendere e modificare.
+
+**Implementazione Tecnica:**
+
+*   **Helper `mkNixosSystem`:** È stata creata una funzione interna per generare una `nixosConfiguration`. Questa funzione accetta il nome e il percorso di un profilo e assembla automaticamente i moduli necessari (come `nixos-hardware` per Hetzner Cloud), riducendo drasticamente il codice ripetitivo.
+*   **Mappatura dei Profili:** I profili principali (`minimal`, `webserver`, ecc.) sono stati definiti in una mappa (`profiles`). Questa mappa viene poi utilizzata per generare dinamicamente gli output `nixosConfigurations`, garantendo che ogni profilo sia esposto come una configurazione NixOS installabile.
+*   **Formalizzazione dei Template:** I template per i casi d'uso comuni sono stati strutturati in una mappa dedicata (`templates`), rendendoli facilmente individuabili e utilizzabili con il comando `nix flake new`.
+*   **`devShell` Potenziato:** L'ambiente di sviluppo è stato arricchito con strumenti aggiuntivi per l'analisi e la formattazione del codice Nix (`statix`, `deadnix`, `nil`), per la documentazione (`mkdocs`) e per la gestione degli script (`shellcheck`). È stato aggiunto un `shellHook` per fornire un messaggio di benvenuto informativo all'attivazione dell'ambiente.
+*   **Input Robusti:** Gli input del flake (`nixpkgs`, `flake-utils`, `nixos-hardware`) sono stati confermati e bloccati a versioni stabili per garantire la riproducibilità.
+
+**Risultato:** Il nuovo `flake.nix` è ora un punto di ingresso centralizzato e potente. La sua struttura modulare e astratta semplificherà l'aggiunta di nuovi profili, template e configurazioni in futuro, mantenendo il codice pulito e coerente.
